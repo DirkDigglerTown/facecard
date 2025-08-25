@@ -10,15 +10,18 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    :root { --bg:#0b0b0f; --card:#15151c; --text:#e9e9ef; --muted:#a3a3ad; --accent:#8b5cf6; --good:#22c55e; --bad:#ef4444; }
+    :root { --bg:#0b0b0f; --card:#15151c; --text:#e9e9ef; --muted:#a3a3ad; --accent:#8b5cf6; --good:#22c55e; --bad:#ef4444; --panel:#0f1016; }
     *{box-sizing:border-box}
-    body{margin:0;background:radial-gradient(1200px 600px at 20% -10%,rgba(139,92,246,.15),transparent),
-                 radial-gradient(1200px 600px at 120% 10%,rgba(34,197,94,.08),transparent),var(--bg);color:var(--text);
-         font:16px/1.55 Inter, ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-    header{position:sticky;top:0;z-index:10;background:rgba(11,11,15,.8);backdrop-filter:saturate(150%) blur(6px);border-bottom:1px solid #20202a}
-    .wrap{max-width:1000px;margin:0 auto;padding:20px}
+    body{margin:0;background:
+      radial-gradient(1200px 600px at 20% -10%,rgba(139,92,246,.18),transparent),
+      radial-gradient(900px 500px at 120% 0%,rgba(34,197,94,.10),transparent),
+      linear-gradient(#0b0b0f,#0b0b0f);
+      color:var(--text);font:16px/1.55 Inter, ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    header{position:sticky;top:0;z-index:10;background:rgba(11,11,15,.85);backdrop-filter:saturate(140%) blur(6px);border-bottom:1px solid #20202a}
+    .wrap{max-width:1100px;margin:0 auto;padding:18px 20px}
     .row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
-    .brand{font-weight:800;letter-spacing:.5px}
+    .brand{font-weight:800;letter-spacing:.5px;display:flex;align-items:center;gap:8px}
+    .brand::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;background:linear-gradient(90deg,var(--accent),#22c55e)}
     .nav a{color:var(--muted);text-decoration:none;margin-right:14px}
     .nav a.active{color:var(--text)}
     .card{background:var(--card);border:1px solid #23232f;border-radius:16px;padding:16px}
@@ -42,14 +45,26 @@
     .hint{color:var(--muted);font-size:12px}
     footer{color:var(--muted);text-align:center;padding:40px 0}
     .preview{width:100%;max-width:280px;border-radius:12px;margin-top:8px;border:1px solid #23232f}
+
+    /* landing layout */
+    .landing{display:grid;grid-template-columns:260px 1fr 260px;gap:16px}
+    @media (max-width: 960px){ .landing{grid-template-columns:1fr} }
+    .panel{background:var(--panel);border:1px solid #1f2030;border-radius:16px;padding:16px}
+    .hero{background:linear-gradient(180deg,rgba(139,92,246,.12),rgba(34,197,94,.08)),var(--card);border:1px solid #23232f;border-radius:18px;padding:24px}
+    .hero h1{margin:0 0 10px;font-size:28px}
+    .hero p{color:var(--muted);margin:0 0 12px}
+    .cta{display:flex;gap:10px;flex-wrap:wrap}
+    .cta a{background:var(--accent);color:white;text-decoration:none;padding:10px 14px;border-radius:12px;font-weight:700}
+    .cta a.secondary{background:#0f0f16;border:1px solid #2a2a36}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" defer></script>
 </head>
 <body>
   <header>
     <div class="wrap row">
-      <div class="brand">💳 Facecard</div>
+      <div class="brand">Facecard</div>
       <nav class="nav">
+        <a href="#/home" id="nav-home">Home</a>
         <a href="#/submit" id="nav-submit">Submit</a>
         <a href="#/browse" id="nav-browse">Browse</a>
         <a href="#/hall" id="nav-hall">Hall of Fame</a>
@@ -102,12 +117,15 @@
 
   // Router
   function route() {
-    const hash = location.hash || '#/submit';
+    const hash = location.hash || '#/home';
     document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+    if (hash.startsWith('#/home')) document.getElementById('nav-home').classList.add('active');
     if (hash.startsWith('#/submit')) document.getElementById('nav-submit').classList.add('active');
     if (hash.startsWith('#/browse')) document.getElementById('nav-browse').classList.add('active');
     if (hash.startsWith('#/hall')) document.getElementById('nav-hall').classList.add('active');
-    if (hash.startsWith('#/submit')) renderSubmit();
+
+    if (hash.startsWith('#/home')) renderHome();
+    else if (hash.startsWith('#/submit')) renderSubmit();
     else if (hash.startsWith('#/hall')) renderHall();
     else renderBrowse();
   }
@@ -115,6 +133,38 @@
   window.addEventListener('load', route);
 
   // Views
+  function renderHome(){
+    const el = document.getElementById('app');
+    el.innerHTML = `
+      <div class="landing">
+        <aside class="panel">
+          <h3 style="margin-top:0">Rules</h3>
+          <ul style="margin:0 0 0 18px;line-height:1.6">
+            <li>One vote per person per entry</li>
+            <li>No hate/harassment; keep it fun</li>
+            <li>NSFW is not allowed</li>
+          </ul>
+        </aside>
+        <section class="hero">
+          <h1>Rate facecards. Rise to the Hall of Fame.</h1>
+          <p>Upload your profile pic, link your X handle, and crowdsource the vibe. Upvote your favorites, downvote the rest. Top 10 all‑time make the Hall.</p>
+          <div class="cta">
+            <a href="#/submit">Submit yours</a>
+            <a href="#/browse" class="secondary">Browse & vote</a>
+          </div>
+        </section>
+        <aside class="panel">
+          <h3 style="margin-top:0">Tips</h3>
+          <ul style="margin:0 0 0 18px;line-height:1.6">
+            <li>Square images look best</li>
+            <li>Use good lighting + sharp focus</li>
+            <li>Link a verification tweet for cred</li>
+          </ul>
+        </aside>
+      </div>
+    `;
+  }
+
   async function renderSubmit(){
     const el = document.getElementById('app');
     el.innerHTML = `
@@ -170,7 +220,6 @@
       let image_url = urlInput || null;
       if (!image_url && !file){ toast('Provide an image URL or upload a file.', false); return; }
 
-      // Upload file to Supabase Storage if provided
       if (file) {
         if (file.size > 5 * 1024 * 1024){ toast('File too large (max 5MB).', false); return; }
         const id = crypto.randomUUID();
@@ -244,7 +293,7 @@
     const q = (searchInput?.value || '').trim().toLowerCase();
     let query = supabase.from('v_submissions_with_score').select('*');
     if (q) {
-      // Search name OR handle
+      // Safe OR syntax for supabase-js
       query = query.or(`display_name.ilike.%${q}%,x_handle.ilike.%${q}%`);
     }
     query = query.order('created_at', { ascending:false }).limit(60);
