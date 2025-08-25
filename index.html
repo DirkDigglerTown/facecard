@@ -755,8 +755,8 @@
       }
     }
   </style>
-  <!-- Fixed Supabase UMD bundle -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <!-- Correct UMD bundle for the global `window.supabase` -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 </head>
 <body>
   <!-- Animated particles -->
@@ -806,26 +806,58 @@
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmeG1wcWd4dnV2bnd3dWVzbWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMzIwMDEsImV4cCI6MjA3MTcwODAwMX0.LIzivyw4jya9lY6vw9hC8A8Ofmjcj1LgIF3lC_RlxZA";
   const EDGE_FUNCTION_URL = "https://sfxmpqgxvuvnwwuesmin.supabase.co/functions/v1/cast-vote";
 
-  // Wait for Supabase to load
+  // Initialize Supabase with proper error handling
   let supabase;
   
-  function initSupabase() {
-    if (typeof window.supabase !== 'undefined') {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false } });
-      return true;
-    }
-    return false;
-  }
-
-  // Try to initialize Supabase
-  if (!initSupabase()) {
-    // If Supabase isn't loaded yet, wait for it
-    window.addEventListener('load', () => {
-      if (!initSupabase()) {
-        console.error('Supabase failed to load. Please refresh the page.');
-        toast('Error loading database connection. Please refresh.', false);
+  // Wait for the DOM and scripts to fully load
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      try {
+        // Check if window.supabase exists
+        if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { 
+            auth: { persistSession: false } 
+          });
+          console.log('Supabase initialized successfully');
+          // Start the router after Supabase is ready
+          route();
+        } else {
+          console.error('Supabase library not found. Trying alternative method...');
+          // Try alternative initialization
+          loadSupabaseAlternative();
+        }
+      } catch (error) {
+        console.error('Error initializing Supabase:', error);
+        loadSupabaseAlternative();
       }
-    });
+    }, 100); // Small delay to ensure script is loaded
+  });
+
+  // Alternative loading method
+  function loadSupabaseAlternative() {
+    // Create a new script element with the exact URL from your working version
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+    script.onload = function() {
+      if (typeof window.supabase !== 'undefined') {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { 
+          auth: { persistSession: false } 
+        });
+        console.log('Supabase loaded via alternative method');
+        route();
+      }
+    };
+    script.onerror = function() {
+      console.error('Failed to load Supabase. Please check your internet connection.');
+      document.getElementById('app').innerHTML = `
+        <div class="empty-state">
+          <h3>Connection Error</h3>
+          <p>Unable to connect to the database. Please refresh the page.</p>
+          <button onclick="location.reload()" class="submit-btn" style="width: auto; padding: 12px 24px;">Refresh Page</button>
+        </div>
+      `;
+    };
+    document.head.appendChild(script);
   }
 
   // Helpers
@@ -856,7 +888,7 @@
     return h.toLowerCase();
   };
 
-  // Router
+  // Router - only run after Supabase is ready
   function route() {
     const hash = location.hash || '#/submit';
     document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
@@ -873,8 +905,10 @@
     }
   }
 
+  // Set up routing only after DOM is ready
   window.addEventListener('hashchange', route);
-  window.addEventListener('load', route);
+  
+  // Don't auto-route on load - wait for Supabase
 
   // Search functionality
   const searchInput = document.getElementById('searchInput');
