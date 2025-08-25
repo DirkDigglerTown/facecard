@@ -3,72 +3,789 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Facecard</title>
+  <title>Facecard - Drop Your Best Shot</title>
   <meta name="description" content="Upload your facecard, vote on favorites, and climb into the Hall of Fame." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    :root { --bg:#0b0b0f; --panel:#11121a; --card:#15151c; --text:#e9e9ef; --muted:#a3a3ad; --accent:#8b5cf6; --good:#22c55e; --bad:#ef4444; }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      background:
-        radial-gradient(1200px 600px at 20% -10%,rgba(139,92,246,.18),transparent),
-        radial-gradient(900px 500px at 120% 0%,rgba(34,197,94,.10),transparent),
-        #0b0b0f;
-      color:var(--text);
-      font:16px/1.55 Inter, ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial
+    :root {
+      --bg: #0a0a0f;
+      --panel: #0f0f17;
+      --card: #141420;
+      --card-hover: #1a1a28;
+      --text: #ffffff;
+      --muted: #94949c;
+      --accent: #8b5cf6;
+      --accent-glow: #a78bfa;
+      --good: #10b981;
+      --bad: #f43f5e;
+      --gold: #fbbf24;
+      --silver: #94a3b8;
+      --bronze: #f97316;
+      --border: rgba(139, 92, 246, 0.15);
     }
-    header{position:sticky;top:0;z-index:10;background:rgba(11,11,15,.85);backdrop-filter:saturate(140%) blur(8px);border-bottom:1px solid #20202a}
-    .wrap{max-width:1120px;margin:0 auto;padding:16px 20px}
-    .row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
-    .brand{font-weight:800;letter-spacing:.4px;display:flex;align-items:center;gap:8px}
-    .brand::before{content:"";width:10px;height:10px;border-radius:2px;background:linear-gradient(90deg,var(--accent),#22c55e)}
-    .nav a{color:var(--muted);text-decoration:none;margin-right:14px}
-    .nav a.active{color:var(--text)}
-    .search input{width:240px;max-width:42vw;padding:10px 12px;border-radius:12px;border:1px solid #2a2a36;background:#101018;color:var(--text)}
-    .card{background:var(--card);border:1px solid #23232f;border-radius:16px;padding:16px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;margin-top:18px}
-    .sub-card{background:#101018;border:1px solid #23232f;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:transform .12s ease, box-shadow .12s ease}
-    .sub-card:hover{transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.25)}
-    .sub-card img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
-    .sub-card .meta{padding:12px}
-    .pill{display:inline-flex;gap:6px;align-items:center;background:#14141c;border:1px solid #242433;color:var(--muted);padding:6px 10px;border-radius:999px;font-size:12px;text-decoration:none}
-    .vote{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:12px;border-top:1px solid #1e1e28}
-    .btn{display:inline-flex;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;border:1px solid #2a2a36;background:#0f0f16;color:var(--text);cursor:pointer;transition:background .12s ease, border-color .12s ease, transform .06s ease}
-    .btn:active{transform:translateY(1px)} .btn.up{border-color:#1f3b2a} .btn.down{border-color:#3b1f1f}
-    .btn.up:hover{background:rgba(34,197,94,.12)} .btn.down:hover{background:rgba(239,68,68,.12)}
-    .score{font-weight:800}
-    .hint{color:var(--muted);font-size:12px}
-    footer{color:var(--muted);text-align:center;padding:40px 0}
-    .upload-form{background:var(--panel);padding:20px;border-radius:16px;max-width:520px;margin:20px auto 0;border:1px solid #23232f}
-    .upload-form h2{margin:0 0 8px;text-align:center}
-    .upload-form input{width:100%;padding:12px;margin:6px 0;border-radius:12px;border:1px solid #2a2a36;background:#101018;color:var(--text)}
-    .upload-form button{width:100%;padding:12px;margin-top:10px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-weight:700;cursor:pointer}
-    .hero{background:linear-gradient(180deg,rgba(139,92,246,.12),rgba(34,197,94,.08)),var(--card);border:1px solid #23232f;border-radius:18px;padding:22px 20px;margin-bottom:14px}
-    .hero h1{margin:0 0 8px;font-size:28px}
-    .hero p{margin:0 0 10px;color:var(--muted)}
-    .marquee{display:flex;gap:12px;overflow:auto;padding:10px 6px;border:1px solid #23232f;background:linear-gradient(180deg,rgba(139,92,246,.08),rgba(34,197,94,.06));border-radius:14px}
-    .marquee .mini{flex:0 0 140px;background:#101018;border:1px solid #23232f;border-radius:12px;overflow:hidden}
-    .marquee img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
-    .marquee .cap{padding:6px 8px;font-size:12px;display:flex;justify-content:space-between;align-items:center}
-    .fab{position:fixed;right:20px;bottom:20px;background:var(--accent);color:#fff;border:none;border-radius:999px;padding:14px 16px;font-weight:800;cursor:pointer;box-shadow:0 12px 28px rgba(0,0,0,.35)}
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(244, 63, 94, 0.08) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Animated background particles */
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.5; }
+      50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
+    }
+
+    .particle {
+      position: fixed;
+      pointer-events: none;
+      opacity: 0.5;
+      z-index: 0;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10, 10, 15, 0.8);
+      backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid var(--border);
+      transition: all 0.3s ease;
+    }
+
+    header:hover {
+      background: rgba(10, 10, 15, 0.95);
+    }
+
+    .wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      font-weight: 900;
+      font-size: 24px;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-glow), var(--good));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .brand:hover {
+      transform: scale(1.05);
+    }
+
+    .brand::before {
+      content: "✨";
+      font-size: 20px;
+    }
+
+    .nav {
+      display: flex;
+      gap: 5px;
+    }
+
+    .nav a {
+      color: var(--muted);
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav a::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, var(--accent), var(--accent-glow));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: -1;
+    }
+
+    .nav a:hover {
+      color: var(--text);
+      transform: translateY(-2px);
+    }
+
+    .nav a.active {
+      color: var(--text);
+      background: rgba(139, 92, 246, 0.15);
+    }
+
+    .nav a.active::before {
+      opacity: 0.1;
+    }
+
+    .search-box {
+      position: relative;
+    }
+
+    .search-box input {
+      width: 280px;
+      padding: 10px 16px 10px 40px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: rgba(20, 20, 32, 0.5);
+      color: var(--text);
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(20, 20, 32, 0.8);
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+    }
+
+    .search-box::before {
+      content: "🔍";
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.5;
+    }
+
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(16, 185, 129, 0.05));
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 60px 40px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+      animation: rotate 20s linear infinite;
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 900;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--text), var(--accent-glow));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+    }
+
+    .hero p {
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 600px;
+      margin: 0 auto 32px;
+      line-height: 1.6;
+    }
+
+    /* Marquee */
+    .marquee-container {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      margin: 40px 0;
+      padding: 20px 0;
+      background: rgba(20, 20, 32, 0.3);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .marquee-label {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg);
+      padding: 4px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      z-index: 2;
+    }
+
+    .marquee {
+      display: flex;
+      gap: 20px;
+      animation: scroll 30s linear infinite;
+      padding: 0 10px;
+    }
+
+    .marquee:hover {
+      animation-play-state: paused;
+    }
+
+    @keyframes scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .marquee-item {
+      flex: 0 0 auto;
+      width: 160px;
+      background: var(--card);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .marquee-item:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+    }
+
+    .marquee-item img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      display: block;
+    }
+
+    .marquee-info {
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .marquee-name {
+      font-weight: 600;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .marquee-score {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    /* Upload Form */
+    .upload-section {
+      max-width: 600px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(16, 185, 129, 0.02));
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px;
+      position: relative;
+    }
+
+    .upload-section h2 {
+      font-size: 32px;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 32px;
+      background: linear-gradient(135deg, var(--accent), var(--good));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(20, 20, 32, 0.5);
+      color: var(--text);
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(20, 20, 32, 0.8);
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+    }
+
+    .file-upload {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      background: rgba(139, 92, 246, 0.05);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .file-upload:hover {
+      border-color: var(--accent);
+      background: rgba(139, 92, 246, 0.1);
+    }
+
+    .file-upload input[type="file"] {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .file-upload-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .file-upload-text {
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .file-upload-hint {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-glow));
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .submit-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+    }
+
+    .submit-btn:hover::before {
+      left: 100%;
+    }
+
+    /* Cards Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+      margin-top: 32px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3);
+      border-color: var(--accent);
+    }
+
+    .card-rank {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 16px;
+      z-index: 2;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .rank-1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+    .rank-2 { background: linear-gradient(135deg, #94a3b8, #64748b); }
+    .rank-3 { background: linear-gradient(135deg, #f97316, #ea580c); }
+    .rank-other { background: linear-gradient(135deg, var(--accent), var(--accent-glow)); }
+
+    .card img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover img {
+      transform: scale(1.05);
+    }
+
+    .card-info {
+      padding: 20px;
+      background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.3));
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .card-name {
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .card-score {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: rgba(139, 92, 246, 0.1);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .card-links {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .card-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .card-link:hover {
+      background: rgba(139, 92, 246, 0.1);
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .vote-section {
+      display: flex;
+      gap: 12px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .vote-btn {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: transparent;
+      color: var(--text);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .vote-btn.up {
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .vote-btn.up:hover {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: var(--good);
+      color: var(--good);
+      transform: scale(1.05);
+    }
+
+    .vote-btn.down {
+      border-color: rgba(244, 63, 94, 0.3);
+    }
+
+    .vote-btn.down:hover {
+      background: rgba(244, 63, 94, 0.2);
+      border-color: var(--bad);
+      color: var(--bad);
+      transform: scale(1.05);
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+      color: var(--muted);
+    }
+
+    .empty-state h3 {
+      font-size: 24px;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+
+    .empty-state a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* FAB */
+    .fab {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-glow));
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 28px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99;
+    }
+
+    .fab:hover {
+      transform: scale(1.1) rotate(90deg);
+      box-shadow: 0 12px 32px rgba(139, 92, 246, 0.6);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 60px 20px 40px;
+      color: var(--muted);
+      font-size: 14px;
+      border-top: 1px solid var(--border);
+      margin-top: 80px;
+    }
+
+    /* Toast */
+    @keyframes slideIn {
+      from { transform: translate(-50%, -100%); opacity: 0; }
+      to { transform: translate(-50%, 0); opacity: 1; }
+    }
+
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      z-index: 9999;
+      animation: slideIn 0.3s ease;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .toast.success {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid var(--good);
+      color: var(--good);
+    }
+
+    .toast.error {
+      background: rgba(244, 63, 94, 0.2);
+      border: 1px solid var(--bad);
+      color: var(--bad);
+    }
+
+    /* Loading animation */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .loading {
+      animation: pulse 1.5s ease infinite;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .search-box input {
+        width: 200px;
+      }
+
+      .grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 16px;
+      }
+
+      .hero {
+        padding: 40px 20px;
+      }
+
+      .upload-section {
+        padding: 24px;
+      }
+    }
   </style>
-  <!-- Correct UMD bundle for the global `window.supabase` -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/index.umd.min.js"></script>
 </head>
 <body>
+  <!-- Animated particles -->
+  <script>
+    for(let i = 0; i < 5; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.top = Math.random() * 100 + '%';
+      particle.style.width = particle.style.height = (Math.random() * 4 + 2) + 'px';
+      particle.style.background = `rgba(139, 92, 246, ${Math.random() * 0.5})`;
+      particle.style.borderRadius = '50%';
+      particle.style.animation = `float ${Math.random() * 10 + 10}s infinite`;
+      particle.style.animationDelay = Math.random() * 5 + 's';
+      document.body.appendChild(particle);
+    }
+  </script>
+
   <header>
-    <div class="wrap row">
-      <div class="brand">Facecard</div>
-      <nav class="nav">
-        <a href="#/submit" id="nav-submit">Submit</a>
-        <a href="#/browse" id="nav-browse">Browse</a>
-        <a href="#/hall" id="nav-hall">Hall of Fame</a>
-      </nav>
-      <div style="margin-left:auto" class="search">
-        <input id="searchInput" type="search" placeholder="Search username or @handle…" />
+    <div class="wrap">
+      <div class="header-content">
+        <div class="brand" onclick="location.hash='#/submit'">Facecard</div>
+        <nav class="nav">
+          <a href="#/submit" id="nav-submit">Submit</a>
+          <a href="#/browse" id="nav-browse">Browse</a>
+          <a href="#/hall" id="nav-hall">Hall of Fame</a>
+        </nav>
+        <div class="search-box">
+          <input id="searchInput" type="search" placeholder="Search username..." />
+        </div>
       </div>
     </div>
   </header>
@@ -76,203 +793,399 @@
   <main class="wrap" id="app"></main>
 
   <footer>
-    Built for the TikTok “Facecard” trend • One vote/person per submission via edge IP hash • Host: GitHub Pages
+    <div>✨ Built for the TikTok "Facecard" trend</div>
+    <div style="margin-top: 8px; opacity: 0.7;">One vote per person • Powered by Supabase • Hosted on GitHub Pages</div>
   </footer>
 
-  <button class="fab" onclick="location.hash='#/submit'">＋ Upload</button>
+  <button class="fab" onclick="location.hash='#/submit'">+</button>
 
   <script>
-  // ---- Your project env ----
+  // Supabase config
   const SUPABASE_URL = "https://sfxmpqgxvuvnwwuesmin.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmeG1wcWd4dnV2bnd3dWVzbWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMzIwMDEsImV4cCI6MjA3MTcwODAwMX0.LIzivyw4jya9lY6vw9hC8A8Ofmjcj1LgIF3lC_RlxZA";
   const EDGE_FUNCTION_URL = "https://sfxmpqgxvuvnwwuesmin.supabase.co/functions/v1/cast-vote";
 
-  // Global Supabase client from UMD
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false } });
 
   // Helpers
-  function toast(msg, ok=true){
+  function toast(msg, ok = true) {
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    
     const t = document.createElement('div');
+    t.className = `toast ${ok ? 'success' : 'error'}`;
     t.textContent = msg;
-    t.style.position='fixed'; t.style.left='50%'; t.style.top='20px'; t.style.transform='translateX(-50%)';
-    t.style.background = ok ? 'rgba(34,197,94,.12)' : 'rgba(239,68,68,.12)';
-    t.style.border = `1px solid ${ok?'#1f3b2a':'#3b1f1f'}`;
-    t.style.color = 'var(--text)'; t.style.padding='10px 14px'; t.style.borderRadius='10px'; t.style.zIndex='9999';
-    document.body.appendChild(t); setTimeout(()=>t.remove(), 1800);
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
   }
-  const normalizeHandle = (h)=>{ if(!h) return null; h=h.trim(); if(!h) return null; if(h.startsWith('http')){ try{const u=new URL(h); return u.pathname.replaceAll('/','').toLowerCase();}catch(e){return h.toLowerCase();}} if(h.startsWith('@')) return h.slice(1).toLowerCase(); return h.toLowerCase(); };
+
+  const normalizeHandle = (h) => {
+    if (!h) return null;
+    h = h.trim();
+    if (!h) return null;
+    if (h.startsWith('http')) {
+      try {
+        const u = new URL(h);
+        return u.pathname.replaceAll('/', '').toLowerCase();
+      } catch (e) {
+        return h.toLowerCase();
+      }
+    }
+    if (h.startsWith('@')) return h.slice(1).toLowerCase();
+    return h.toLowerCase();
+  };
 
   // Router
-  function route(){
+  function route() {
     const hash = location.hash || '#/submit';
     document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
-    if (hash.startsWith('#/submit')) { document.getElementById('nav-submit').classList.add('active'); renderSubmit(); return; }
-    if (hash.startsWith('#/hall'))   { document.getElementById('nav-hall').classList.add('active');   renderHall();   return; }
-    document.getElementById('nav-browse').classList.add('active'); renderBrowse();
+    
+    if (hash.startsWith('#/submit')) {
+      document.getElementById('nav-submit').classList.add('active');
+      renderSubmit();
+    } else if (hash.startsWith('#/hall')) {
+      document.getElementById('nav-hall').classList.add('active');
+      renderHall();
+    } else {
+      document.getElementById('nav-browse').classList.add('active');
+      renderBrowse();
+    }
   }
+
   window.addEventListener('hashchange', route);
   window.addEventListener('load', route);
 
-  // Live search on Browse
-  const searchInput = document.getElementById('searchInput'); let searchTimer;
-  searchInput?.addEventListener('input', ()=>{ clearTimeout(searchTimer); searchTimer=setTimeout(loadAndRenderCards,250); });
+  // Search functionality
+  const searchInput = document.getElementById('searchInput');
+  let searchTimer;
+  searchInput?.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(loadAndRenderCards, 300);
+  });
 
-  // ---- Views ----
-  async function renderSubmit(){
+  // Submit page
+  async function renderSubmit() {
     const el = document.getElementById('app');
     el.innerHTML = `
-      <section class="hero">
-        <h1>Drop your facecard. Get votes. Hit the Hall of Fame.</h1>
-        <p>Upload a profile pic, link your X handle, and let the crowd vote with 👍 / 👎. Top 10 all-time appear below and on the Hall of Fame page.</p>
-        <div class="marquee" id="topStrip"></div>
-      </section>
-      <div class="upload-form">
+      <div class="hero">
+        <div class="hero-content">
+          <h1>Drop Your Facecard.<br>Get Rated.<br>Become a Legend.</h1>
+          <p>Upload your best shot, link your X account, and let the community decide if you've got what it takes to reach the Hall of Fame.</p>
+        </div>
+      </div>
+
+      <div class="marquee-container">
+        <div class="marquee-label">🏆 Current Top 10</div>
+        <div class="marquee" id="topMarquee"></div>
+      </div>
+
+      <div class="upload-section">
         <h2>Submit Your Facecard</h2>
-        <input id="displayName" placeholder="Display Name" required>
-        <input id="imageUrl" placeholder="Image URL (or upload below)">
-        <input type="file" id="imageFile" accept="image/*">
-        <input id="xHandle" placeholder="X handle (optional)">
-        <input id="verifyUrl" placeholder="Verification tweet URL (optional)">
-        <button id="submitBtn">Submit</button>
-        <p class="hint" style="text-align:center;margin:8px 0 0">Tip: square images look best • Max ~5MB</p>
+        
+        <div class="form-group">
+          <label>Display Name</label>
+          <input id="displayName" placeholder="Enter your name" required>
+        </div>
+
+        <div class="form-group">
+          <label>Profile Picture</label>
+          <div class="file-upload">
+            <input type="file" id="imageFile" accept="image/*">
+            <div class="file-upload-icon">📸</div>
+            <div class="file-upload-text">Click to upload your best shot</div>
+            <div class="file-upload-hint">Square images work best • Max 5MB</div>
+          </div>
+          <input id="imageUrl" placeholder="Or paste image URL" style="margin-top: 12px;">
+        </div>
+
+        <div class="form-group">
+          <label>X (Twitter) Handle (Optional)</label>
+          <input id="xHandle" placeholder="@yourhandle">
+        </div>
+
+        <div class="form-group">
+          <label>Verification Tweet URL (Optional)</label>
+          <input id="verifyUrl" placeholder="Link to your tweet">
+        </div>
+
+        <button class="submit-btn" id="submitBtn">Upload Facecard</button>
       </div>
     `;
 
-    // Top 10 strip
-    const { data: top10 } = await supabase.from('v_submissions_with_score').select('*').order('score',{ascending:false}).limit(10);
-    const c = document.getElementById('topStrip');
+    // Load top 10 for marquee
+    const { data: top10 } = await supabase
+      .from('v_submissions_with_score')
+      .select('*')
+      .order('score', { ascending: false })
+      .limit(10);
+
+    const marquee = document.getElementById('topMarquee');
     if (top10?.length) {
-      c.innerHTML = top10.map(r=>`
-        <div class="mini">
+      // Duplicate for seamless scrolling
+      const items = [...top10, ...top10].map(r => `
+        <div class="marquee-item" onclick="location.hash='#/browse'">
           <img src="${r.image_url}" alt="${r.display_name}">
-          <div class="cap"><span>${(r.display_name||'User').split(' ')[0]}</span><strong>${r.score??0}</strong></div>
-        </div>`).join('');
+          <div class="marquee-info">
+            <div class="marquee-name">${r.display_name}</div>
+            <div class="marquee-score">⭐ ${r.score ?? 0}</div>
+          </div>
+        </div>
+      `).join('');
+      marquee.innerHTML = items;
     } else {
-      c.innerHTML = `<span class="hint">Be first to hit the Hall of Fame → submit below</span>`;
+      marquee.innerHTML = `<div style="padding: 20px; color: var(--muted);">Be the first to submit! 🚀</div>`;
     }
+
+    // File upload preview
+    document.getElementById('imageFile').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const text = document.querySelector('.file-upload-text');
+        text.textContent = file.name;
+        text.style.color = 'var(--good)';
+      }
+    });
 
     document.getElementById('submitBtn').addEventListener('click', submitCard);
   }
 
-  async function renderBrowse(){
+  // Browse page
+  async function renderBrowse() {
     const el = document.getElementById('app');
     el.innerHTML = `
-      <div class="row" style="justify-content:space-between;align-items:end">
-        <div>
-          <h2 style="margin:0 0 8px">Browse & Vote</h2>
-          <p class="hint">Search by display name or @handle. Click 👍 / 👎 to vote. One vote per person per submission.</p>
-        </div>
-        <a class="pill" href="#/hall">🏆 Hall of Fame</a>
+      <div style="margin-bottom: 32px;">
+        <h1 style="font-size: 36px; font-weight: 800; margin-bottom: 8px;">Browse & Vote</h1>
+        <p style="color: var(--muted);">Vote for your favorites. One vote per person per submission.</p>
       </div>
-      <div class="grid" id="grid"></div>
+      <div class="grid loading" id="grid"></div>
     `;
     await loadAndRenderCards();
   }
 
-  async function renderHall(){
+  // Hall of Fame page
+  async function renderHall() {
     const el = document.getElementById('app');
     el.innerHTML = `
-      <div class="row" style="justify-content:space-between;align-items:end">
-        <div>
-          <h2 style="margin:0 0 8px">Hall of Fame — Top 10</h2>
-          <p class="hint">All-time leaders by score (upvotes − downvotes).</p>
-        </div>
-        <a class="pill" href="#/browse">← Back to Browse</a>
+      <div style="margin-bottom: 32px;">
+        <h1 style="font-size: 36px; font-weight: 800; margin-bottom: 8px;">🏆 Hall of Fame</h1>
+        <p style="color: var(--muted);">The top 10 highest rated facecards of all time.</p>
       </div>
-      <div class="grid" id="grid"></div>
+      <div class="grid loading" id="grid"></div>
     `;
-    const { data, error } = await supabase.from('v_submissions_with_score').select('*').order('score',{ascending:false}).limit(10);
-    if (error){ document.getElementById('grid').innerHTML = `<p class="hint">Error: ${error.message}</p>`; return; }
+
+    const { data, error } = await supabase
+      .from('v_submissions_with_score')
+      .select('*')
+      .order('score', { ascending: false })
+      .limit(10);
+
+    if (error) {
+      document.getElementById('grid').innerHTML = `
+        <div class="empty-state">
+          <h3>Error loading Hall of Fame</h3>
+          <p>${error.message}</p>
+        </div>`;
+      return;
+    }
+
     renderCards(data, true);
   }
 
-  async function loadAndRenderCards(){
+  async function loadAndRenderCards() {
     const q = (searchInput?.value || '').trim().toLowerCase();
     let query = supabase.from('v_submissions_with_score').select('*');
-    if (q) query = query.or(`display_name.ilike.%${q}%,x_handle.ilike.%${q}%`);
-    query = query.order('created_at',{ascending:false}).limit(60);
+    
+    if (q) {
+      query = query.or(`display_name.ilike.%${q}%,x_handle.ilike.%${q}%`);
+    }
+    
+    query = query.order('created_at', { ascending: false }).limit(60);
     const { data, error } = await query;
-    if (error){ document.getElementById('grid').innerHTML = `<p class="hint">Error: ${error.message}</p>`; return; }
-    if (!data || !data.length){ document.getElementById('grid').innerHTML = `<p class="hint">No facecards yet. <a href="#/submit">Be the first to upload</a>!</p>`; return; }
+
+    const grid = document.getElementById('grid');
+    grid.classList.remove('loading');
+
+    if (error) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <h3>Error loading submissions</h3>
+          <p>${error.message}</p>
+        </div>`;
+      return;
+    }
+
+    if (!data || !data.length) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <h3>No facecards found</h3>
+          <p>${q ? 'Try a different search term or' : ''} <a href="#/submit">be the first to upload</a>!</p>
+        </div>`;
+      return;
+    }
+
     renderCards(data);
   }
 
-  function renderCards(rows, showRank=false){
+  function renderCards(rows, showRank = false) {
     const grid = document.getElementById('grid');
-    grid.innerHTML = rows.map((r, idx)=>`
-      <div class="sub-card">
-        <img src="${r.image_url}" alt="${r.display_name}" />
-        <div class="meta">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
-            <strong>${r.display_name}</strong>
-            ${showRank ? `<div class="pill">#${idx+1} • <span class="score">${r.score ?? 0}</span></div>` : `<div class="pill">score <span class="score">${r.score ?? 0}</span></div>`}
-          </div>
-          <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-            ${r.x_handle ? `<a class="pill" href="https://x.com/${r.x_handle}" target="_blank" rel="noopener">x.com/${r.x_handle}</a>` : ''}
-            ${r.verify_url ? `<a class="pill" href="${r.verify_url}" target="_blank" rel="noopener">verification</a>` : ''}
+    grid.classList.remove('loading');
+    
+    grid.innerHTML = rows.map((r, idx) => {
+      let rankBadge = '';
+      if (showRank) {
+        const rankClass = idx === 0 ? 'rank-1' : idx === 1 ? 'rank-2' : idx === 2 ? 'rank-3' : 'rank-other';
+        rankBadge = `<div class="card-rank ${rankClass}">${idx + 1}</div>`;
+      }
+
+      return `
+        <div class="card">
+          ${rankBadge}
+          <img src="${r.image_url}" alt="${r.display_name}" />
+          <div class="card-info">
+            <div class="card-header">
+              <div class="card-name">${r.display_name}</div>
+              <div class="card-score">⭐ ${r.score ?? 0}</div>
+            </div>
+            <div class="card-links">
+              ${r.x_handle ? `
+                <a class="card-link" href="https://x.com/${r.x_handle}" target="_blank" rel="noopener">
+                  🐦 @${r.x_handle}
+                </a>` : ''}
+              ${r.verify_url ? `
+                <a class="card-link" href="${r.verify_url}" target="_blank" rel="noopener">
+                  ✓ Verified
+                </a>` : ''}
+            </div>
+            <div class="vote-section">
+              <button class="vote-btn up" onclick="vote('${r.id}', 1)">
+                👍 Upvote
+              </button>
+              <button class="vote-btn down" onclick="vote('${r.id}', -1)">
+                👎 Downvote
+              </button>
+            </div>
           </div>
         </div>
-        <div class="vote">
-          <div>
-            <button class="btn up"   onclick="vote('${r.id}', 1)">👍 Upvote</button>
-            <button class="btn down" onclick="vote('${r.id}',-1)">👎 Downvote</button>
-          </div>
-        </div>
-      </div>`).join('');
+      `;
+    }).join('');
   }
 
-  // ---- Actions ----
-  async function submitCard(){
-    const name = document.getElementById('displayName').value.trim();
-    const urlInput = document.getElementById('imageUrl').value.trim();
-    const file = document.getElementById('imageFile').files[0];
-    const xHandleRaw = document.getElementById('xHandle').value;
-    const verifyUrl = document.getElementById('verifyUrl').value.trim() || null;
-    const x_handle = normalizeHandle(xHandleRaw);
+  // Submit functionality
+  async function submitCard() {
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Uploading...';
 
-    if (!name){ toast('Display name required', false); return; }
+    try {
+      const name = document.getElementById('displayName').value.trim();
+      const urlInput = document.getElementById('imageUrl').value.trim();
+      const file = document.getElementById('imageFile').files[0];
+      const xHandleRaw = document.getElementById('xHandle').value;
+      const verifyUrl = document.getElementById('verifyUrl').value.trim() || null;
+      const x_handle = normalizeHandle(xHandleRaw);
 
-    let image_url = urlInput || null;
-    if (!image_url && !file){ toast('Provide an image URL or upload a file.', false); return; }
+      if (!name) {
+        toast('Please enter your display name', false);
+        return;
+      }
 
-    if (file){
-      if (file.size > 5 * 1024 * 1024){ toast('File too large (max 5MB).', false); return; }
-      const id  = crypto.randomUUID();
-      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-      const path = `submissions/${id}.${ext}`;
-      const { error: upErr } = await supabase.storage.from('facecard').upload(path, file, {
-        cacheControl: '3600', upsert: false, contentType: file.type || 'image/jpeg'
-      });
-      if (upErr){ toast('Upload failed: ' + upErr.message, false); return; }
-      const { data: pub } = supabase.storage.from('facecard').getPublicUrl(path);
-      image_url = pub.publicUrl;
+      let image_url = urlInput || null;
+      if (!image_url && !file) {
+        toast('Please provide an image URL or upload a file', false);
+        return;
+      }
+
+      if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          toast('File too large (max 5MB)', false);
+          return;
+        }
+
+        const id = crypto.randomUUID();
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        const path = `submissions/${id}.${ext}`;
+        
+        const { error: upErr } = await supabase.storage
+          .from('facecard')
+          .upload(path, file, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: file.type || 'image/jpeg'
+          });
+
+        if (upErr) {
+          toast('Upload failed: ' + upErr.message, false);
+          return;
+        }
+
+        const { data: pub } = supabase.storage.from('facecard').getPublicUrl(path);
+        image_url = pub.publicUrl;
+      }
+
+      const submission = {
+        display_name: name,
+        image_url,
+        x_handle,
+        verify_url: verifyUrl
+      };
+
+      const { data, error } = await supabase
+        .from('submissions')
+        .insert(submission)
+        .select('id');
+
+      if (error) {
+        toast('Submit failed: ' + error.message, false);
+        return;
+      }
+
+      toast('Facecard submitted successfully! 🎉');
+      
+      // Clear form
+      document.getElementById('displayName').value = '';
+      document.getElementById('imageUrl').value = '';
+      document.getElementById('xHandle').value = '';
+      document.getElementById('verifyUrl').value = '';
+      document.getElementById('imageFile').value = '';
+      document.querySelector('.file-upload-text').textContent = 'Click to upload your best shot';
+      document.querySelector('.file-upload-text').style.color = 'var(--accent)';
+
+      // Redirect to browse
+      setTimeout(() => {
+        location.hash = '#/browse';
+      }, 1500);
+
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Upload Facecard';
     }
-
-    const submission = { display_name: name, image_url, x_handle, verify_url: verifyUrl };
-    const { data, error } = await supabase.from('submissions').insert(submission).select('id');
-    if (error){ toast('Submit failed: ' + error.message, false); return; }
-
-    const sid = data[0].id;
-    location.hash = `#/browse?highlight=${sid}`;
-    await loadAndRenderCards();
-    toast('Submitted!');
   }
 
-  async function vote(submission_id, direction){
-    try{
+  // Vote functionality
+  async function vote(submission_id, direction) {
+    try {
       const res = await fetch(EDGE_FUNCTION_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ submission_id, direction })
       });
+
       const out = await res.json();
       if (!res.ok) throw new Error(out.error || 'Vote failed');
-      if (location.hash.startsWith('#/hall')) await renderHall(); else await loadAndRenderCards();
-      toast(direction === 1 ? 'Upvoted' : 'Downvoted');
-    } catch(e){
+
+      toast(direction === 1 ? 'Upvoted! 👍' : 'Downvoted! 👎');
+      
+      // Refresh current view
+      if (location.hash.startsWith('#/hall')) {
+        await renderHall();
+      } else {
+        await loadAndRenderCards();
+      }
+    } catch (e) {
       toast(String(e.message || e), false);
     }
   }
+
   window.vote = vote;
   </script>
 </body>
