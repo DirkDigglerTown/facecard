@@ -1,0 +1,75 @@
+<!doctype html>
+let searchTimer;
+searchInput.addEventListener('input', ()=>{
+clearTimeout(searchTimer);
+searchTimer = setTimeout(loadAndRenderCards, 250);
+});
+
+
+async function loadAndRenderCards(){
+const q = (searchInput.value || '').trim().toLowerCase();
+let query = supabase.from('v_submissions_with_score').select('*');
+if (q) {
+query = query.ilike('display_name', `%${q}%`).or(`x_handle.ilike.%${q}%`);
+}
+query = query.order('created_at', { ascending:false }).limit(60);
+const { data, error } = await query;
+if (error) return (document.getElementById('grid').innerHTML = `<p class="hint">Error: ${error.message}</p>`);
+renderCards(data);
+}
+
+
+function renderCards(rows, showRank=false){
+const grid = document.getElementById('grid');
+if (!rows || rows.length === 0) { grid.innerHTML = '<p class="hint">No results yet.</p>'; return; }
+
+
+const url = new URL(location.href);
+const highlight = url.hash.includes('highlight=') ? url.hash.split('highlight=')[1] : null;
+
+
+grid.innerHTML = rows.map((r, idx)=>{
+const at = r.x_handle ? '@' + r.x_handle : '';
+const rank = showRank ? `<div class="pill">#${idx+1} • <span class="score">${r.score ?? 0}</span></div>` : `<div class="pill">score <span class="score">${r.score ?? 0}</span></div>`;
+const hl = highlight && highlight.startsWith(r.id) ? 'outline:2px solid var(--accent);outline-offset:2px' : '';
+return `
+<div class="sub-card" style="${hl}">
+<img src="${r.image_url}" alt="${r.display_name}" />
+<div class="meta">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+<strong>${r.display_name}</strong>
+${rank}
+</div>
+<div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+${r.x_handle ? `<a class="pill" href="https://x.com/${r.x_handle}" target="_blank" rel="noopener">x.com/${r.x_handle}</a>` : ''}
+${r.verify_url ? `<a class="pill" href="${r.verify_url}" target="_blank" rel="noopener">verification</a>` : ''}
+</div>
+</div>
+<div class="vote">
+<button class="btn up" onclick="vote('${r.id}', 1)">▲ Upvote</button>
+<button class="btn down" onclick="vote('${r.id}', -1)">▼ Downvote</button>
+</div>
+</div>`;
+}).join('');
+}
+
+
+async function vote(submission_id, direction){
+try{
+const res = await fetch(EDGE_FUNCTION_URL, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ submission_id, direction })
+});
+const out = await res.json();
+if (!res.ok) throw new Error(out.error || 'Vote failed');
+// Refresh visible lists
+if (location.hash.startsWith('#/hall')) await renderHall(); else await loadAndRenderCards();
+} catch(e){
+alert(e.message);
+}
+}
+window.vote = vote;
+</script>
+</body>
+</html>
