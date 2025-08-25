@@ -1,4 +1,16 @@
 <!doctype html>
+`;
+
+
+// Top 10 by score via view
+const { data, error } = await supabase.from('v_submissions_with_score').select('*').order('score', { ascending:false }).limit(10);
+if (error) return (document.getElementById('grid').innerHTML = `<p class="hint">Error: ${error.message}</p>`);
+renderCards(data, true);
+}
+
+
+// Live search
+const searchInput = document.getElementById('searchInput');
 let searchTimer;
 searchInput.addEventListener('input', ()=>{
 clearTimeout(searchTimer);
