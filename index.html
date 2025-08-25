@@ -132,11 +132,14 @@
     .brand-logo {
       width: 50px;
       height: 32px;
-      background: url('https://raw.githubusercontent.com/yourusername/facecard/main/facecard-golden.jpg') no-repeat center;
+      background-image: url('./logo.jpg');
+      background-repeat: no-repeat;
+      background-position: center;
       background-size: cover;
       border-radius: 6px;
       box-shadow: 0 2px 10px rgba(212, 175, 55, 0.4);
       border: 1px solid var(--accent-dark);
+      display: block;
     }
 
     .brand-text {
@@ -316,19 +319,20 @@
       position: relative;
       width: 100%;
       overflow: hidden;
-      margin: 40px 0;
-      padding: 20px 0;
+      margin: 40px 0 20px 0;
+      padding: 40px 0 30px 0;
       background: linear-gradient(135deg, rgba(212, 175, 55, 0.05), transparent),
                   linear-gradient(180deg, var(--card) 0%, var(--panel) 100%);
       border-radius: 20px;
       border: 2px solid var(--border);
       box-shadow: inset 0 1px 0 rgba(212, 175, 55, 0.1),
                   0 4px 20px rgba(0, 0, 0, 0.2);
+      min-height: 260px;
     }
 
     .marquee-label {
       position: absolute;
-      top: -14px;
+      top: 10px;
       left: 50%;
       transform: translateX(-50%);
       background: linear-gradient(180deg, var(--panel) 0%, var(--card) 100%);
@@ -348,7 +352,8 @@
       display: flex;
       gap: 20px;
       animation: scroll 30s linear infinite;
-      padding: 0 10px;
+      padding: 10px;
+      align-items: center;
     }
 
     .marquee:hover {
@@ -357,15 +362,15 @@
 
     @keyframes scroll {
       0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
+      100% { transform: translateX(calc(-180px * 10 - 200px)); }
     }
 
     .marquee-item {
       flex: 0 0 auto;
-      width: 160px;
+      width: 180px;
       background: linear-gradient(180deg, var(--card) 0%, var(--panel) 100%);
       border-radius: 12px;
-      overflow: hidden;
+      overflow: visible;
       border: 2px solid var(--border);
       transition: all 0.3s ease;
       cursor: pointer;
@@ -376,6 +381,7 @@
       transform: scale(1.05) translateY(-4px);
       box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3);
       border-color: var(--accent);
+      z-index: 10;
     }
 
     .marquee-item img {
@@ -383,25 +389,23 @@
       aspect-ratio: 1;
       object-fit: cover;
       display: block;
+      border-radius: 10px 10px 0 0;
     }
 
     .marquee-info {
-      padding: 12px;
+      padding: 14px 12px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
+      gap: 6px;
       background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.4));
-      min-height: 45px;
+      min-height: 65px;
     }
 
     .marquee-name {
       font-weight: 600;
-      font-size: 13px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 90px;
+      font-size: 14px;
       color: var(--text);
+      line-height: 1.2;
     }
 
     .marquee-score {
@@ -410,7 +414,7 @@
       gap: 4px;
       font-weight: 700;
       color: var(--accent-glow);
-      font-size: 14px;
+      font-size: 15px;
       text-shadow: 0 2px 4px rgba(212, 175, 55, 0.3);
     }
 
@@ -1084,6 +1088,7 @@
     el.innerHTML = `
       <div class="hero">
         <div class="hero-content">
+          <img src="./logo.jpg" alt="Facecard" style="width: 120px; height: auto; margin-bottom: 24px; border-radius: 8px; box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);">
           <h1>Drop Your Facecard.<br>Get Rated.<br>Become a Legend.</h1>
           <p>Upload your best shot, link your X account, and let the community decide if you've got what it takes to reach the Hall of Fame.</p>
         </div>
@@ -1127,7 +1132,7 @@
       </div>
     `;
 
-    // Load top 10 for marquee
+    // Load top 10 for marquee - ABSOLUTELY NO DUPLICATION
     try {
       const { data: top10 } = await supabase
         .from('v_submissions_with_score')
@@ -1137,9 +1142,16 @@
 
       const marquee = document.getElementById('topMarquee');
       if (top10?.length) {
-        // Only duplicate if we have less than 10 items for smooth scrolling
-        const itemsToShow = top10.length < 10 ? [...top10, ...top10] : top10;
-        const items = itemsToShow.map(r => `
+        // Create unique IDs for each entry to ensure no duplication
+        const uniqueItems = new Map();
+        top10.forEach(r => {
+          if (!uniqueItems.has(r.id)) {
+            uniqueItems.set(r.id, r);
+          }
+        });
+        
+        // Convert back to array and create HTML
+        const items = Array.from(uniqueItems.values()).map(r => `
           <div class="marquee-item" onclick="location.hash='#/browse'">
             <img src="${r.image_url}" alt="${r.display_name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzM0NCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjOTk5IiBmb250LXNpemU9IjE4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+'">
             <div class="marquee-info">
@@ -1148,9 +1160,16 @@
             </div>
           </div>
         `).join('');
+        
         marquee.innerHTML = items;
+        
+        // If less than 5 entries, stop the animation as it looks weird
+        if (uniqueItems.size < 5) {
+          marquee.style.animation = 'none';
+          marquee.style.justifyContent = 'center';
+        }
       } else {
-        marquee.innerHTML = `<div style="padding: 20px; color: var(--muted);">Be the first to submit! 🚀</div>`;
+        marquee.innerHTML = `<div style="padding: 20px; color: var(--muted); text-align: center;">Be the first to submit your facecard! 🚀</div>`;
       }
     } catch (error) {
       console.error('Error loading top 10:', error);
