@@ -53,9 +53,23 @@
       right: 0;
       bottom: 0;
       background: 
-        radial-gradient(ellipse at top, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at bottom right, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
-        linear-gradient(180deg, #1a1814 0%, #252119 100%);
+        linear-gradient(180deg, rgba(26, 24, 20, 0.92) 0%, rgba(26, 24, 20, 0.85) 100%),
+        url('./FILENAME.jpg') center/cover no-repeat fixed;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.3;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(ellipse at top, rgba(212, 175, 55, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at bottom right, rgba(212, 175, 55, 0.04) 0%, transparent 50%);
       pointer-events: none;
       z-index: 0;
     }
