@@ -10,20 +10,23 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0a0a0f;
-      --panel: #0f0f17;
-      --card: #141420;
-      --card-hover: #1a1a28;
-      --text: #ffffff;
-      --muted: #94949c;
-      --accent: #8b5cf6;
-      --accent-glow: #a78bfa;
-      --good: #10b981;
-      --bad: #f43f5e;
-      --gold: #fbbf24;
-      --silver: #94a3b8;
-      --bronze: #f97316;
-      --border: rgba(139, 92, 246, 0.15);
+      --bg: #1a1814;
+      --panel: #252119;
+      --card: #2d2820;
+      --card-hover: #3a3428;
+      --text: #f4f1e8;
+      --muted: #a09680;
+      --accent: #d4af37;
+      --accent-glow: #f4d03f;
+      --accent-dark: #b8941f;
+      --good: #52c41a;
+      --bad: #ff4d4f;
+      --gold: #ffd700;
+      --gold-dark: #d4af37;
+      --silver: #c0c0c0;
+      --bronze: #cd7f32;
+      --border: rgba(212, 175, 55, 0.2);
+      --border-light: rgba(212, 175, 55, 0.3);
     }
     
     * {
@@ -39,6 +42,7 @@
       line-height: 1.6;
       overflow-x: hidden;
       min-height: 100vh;
+      position: relative;
     }
 
     body::before {
@@ -49,11 +53,26 @@
       right: 0;
       bottom: 0;
       background: 
-        radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(244, 63, 94, 0.08) 0%, transparent 50%);
+        radial-gradient(ellipse at top, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at bottom right, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
+        linear-gradient(180deg, #1a1814 0%, #252119 100%);
       pointer-events: none;
       z-index: 0;
+    }
+
+    /* Golden shimmer effect */
+    @keyframes shimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+
+    .gold-shimmer {
+      background: linear-gradient(90deg, 
+        transparent 0%,
+        rgba(212, 175, 55, 0.4) 50%,
+        transparent 100%);
+      background-size: 200% 100%;
+      animation: shimmer 3s ease-in-out infinite;
     }
 
     /* Animated background particles */
@@ -74,14 +93,16 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(10, 10, 15, 0.8);
+      background: linear-gradient(180deg, rgba(26, 24, 20, 0.95) 0%, rgba(37, 33, 25, 0.9) 100%);
       backdrop-filter: blur(20px) saturate(180%);
       border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 20px rgba(212, 175, 55, 0.1);
       transition: all 0.3s ease;
     }
 
     header:hover {
-      background: rgba(10, 10, 15, 0.95);
+      background: linear-gradient(180deg, rgba(26, 24, 20, 0.98) 0%, rgba(37, 33, 25, 0.95) 100%);
+      box-shadow: 0 4px 30px rgba(212, 175, 55, 0.15);
     }
 
     .wrap {
@@ -101,27 +122,44 @@
     }
 
     .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .brand-logo {
+      width: 50px;
+      height: 32px;
+      background: url('https://raw.githubusercontent.com/yourusername/facecard/main/facecard-golden.jpg') no-repeat center;
+      background-size: cover;
+      border-radius: 6px;
+      box-shadow: 0 2px 10px rgba(212, 175, 55, 0.4);
+      border: 1px solid var(--accent-dark);
+    }
+
+    .brand-text {
       font-weight: 900;
       font-size: 24px;
-      letter-spacing: -0.5px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-glow), var(--good));
+      letter-spacing: 1px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-glow), var(--gold));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-      transition: transform 0.3s ease;
+      text-transform: uppercase;
+      text-shadow: 0 2px 10px rgba(212, 175, 55, 0.2);
     }
 
     .brand:hover {
       transform: scale(1.05);
     }
 
-    .brand::before {
-      content: "✨";
-      font-size: 20px;
+    .brand:hover .brand-text {
+      background: linear-gradient(135deg, var(--accent-glow), var(--gold), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .nav {
@@ -133,11 +171,14 @@
       color: var(--muted);
       text-decoration: none;
       padding: 8px 16px;
-      border-radius: 12px;
+      border-radius: 8px;
       transition: all 0.3s ease;
       font-weight: 500;
       position: relative;
       overflow: hidden;
+      text-transform: uppercase;
+      font-size: 13px;
+      letter-spacing: 1px;
     }
 
     .nav a::before {
@@ -154,17 +195,15 @@
     }
 
     .nav a:hover {
-      color: var(--text);
-      transform: translateY(-2px);
+      color: var(--accent-glow);
+      transform: translateY(-1px);
+      text-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
     }
 
     .nav a.active {
-      color: var(--text);
-      background: rgba(139, 92, 246, 0.15);
-    }
-
-    .nav a.active::before {
-      opacity: 0.1;
+      color: var(--accent-glow);
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(244, 208, 63, 0.05));
+      box-shadow: inset 0 1px 0 var(--border), 0 2px 8px rgba(212, 175, 55, 0.1);
     }
 
     .search-box {
@@ -200,13 +239,18 @@
 
     /* Hero Section */
     .hero {
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(16, 185, 129, 0.05));
-      border: 1px solid var(--border);
-      border-radius: 24px;
+      background: 
+        linear-gradient(135deg, rgba(212, 175, 55, 0.05), transparent),
+        linear-gradient(180deg, var(--card) 0%, var(--panel) 100%);
+      border: 2px solid var(--border);
+      border-radius: 20px;
       padding: 60px 40px;
       margin-bottom: 40px;
       position: relative;
       overflow: hidden;
+      box-shadow: 
+        inset 0 1px 0 rgba(212, 175, 55, 0.2),
+        0 10px 40px rgba(0, 0, 0, 0.3);
     }
 
     .hero::before {
@@ -216,8 +260,22 @@
       right: -50%;
       width: 200%;
       height: 200%;
-      background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
-      animation: rotate 20s linear infinite;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.03) 0%, transparent 70%);
+      animation: rotate 30s linear infinite;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, 
+        transparent 0%, 
+        var(--accent-glow) 50%, 
+        transparent 100%);
+      opacity: 0.5;
     }
 
     @keyframes rotate {
@@ -235,11 +293,14 @@
       font-size: clamp(32px, 5vw, 56px);
       font-weight: 900;
       margin-bottom: 16px;
-      background: linear-gradient(135deg, var(--text), var(--accent-glow));
+      background: linear-gradient(135deg, var(--gold), var(--accent-glow), var(--text));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       line-height: 1.2;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 4px 20px rgba(212, 175, 55, 0.2);
     }
 
     .hero p {
@@ -257,26 +318,30 @@
       overflow: hidden;
       margin: 40px 0;
       padding: 20px 0;
-      background: rgba(20, 20, 32, 0.3);
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.05), transparent),
+                  linear-gradient(180deg, var(--card) 0%, var(--panel) 100%);
       border-radius: 20px;
-      border: 1px solid var(--border);
+      border: 2px solid var(--border);
+      box-shadow: inset 0 1px 0 rgba(212, 175, 55, 0.1),
+                  0 4px 20px rgba(0, 0, 0, 0.2);
     }
 
     .marquee-label {
       position: absolute;
-      top: -12px;
+      top: -14px;
       left: 50%;
       transform: translateX(-50%);
-      background: var(--bg);
-      padding: 4px 16px;
+      background: linear-gradient(180deg, var(--panel) 0%, var(--card) 100%);
+      padding: 6px 20px;
       border-radius: 20px;
-      border: 1px solid var(--border);
+      border: 2px solid var(--border);
       font-size: 12px;
-      font-weight: 600;
-      color: var(--accent);
+      font-weight: 700;
+      color: var(--accent-glow);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 1.5px;
       z-index: 2;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
 
     .marquee {
@@ -298,17 +363,19 @@
     .marquee-item {
       flex: 0 0 auto;
       width: 160px;
-      background: var(--card);
-      border-radius: 16px;
+      background: linear-gradient(180deg, var(--card) 0%, var(--panel) 100%);
+      border-radius: 12px;
       overflow: hidden;
-      border: 1px solid var(--border);
+      border: 2px solid var(--border);
       transition: all 0.3s ease;
       cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
 
     .marquee-item:hover {
-      transform: scale(1.05);
-      box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+      transform: scale(1.05) translateY(-4px);
+      box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3);
+      border-color: var(--accent);
     }
 
     .marquee-item img {
@@ -323,15 +390,18 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(0, 0, 0, 0.3);
+      background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.4));
+      min-height: 45px;
     }
 
     .marquee-name {
       font-weight: 600;
-      font-size: 14px;
+      font-size: 13px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      max-width: 90px;
+      color: var(--text);
     }
 
     .marquee-score {
@@ -339,18 +409,39 @@
       align-items: center;
       gap: 4px;
       font-weight: 700;
-      color: var(--accent);
+      color: var(--accent-glow);
+      font-size: 14px;
+      text-shadow: 0 2px 4px rgba(212, 175, 55, 0.3);
     }
 
     /* Upload Form */
     .upload-section {
       max-width: 600px;
       margin: 0 auto;
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(16, 185, 129, 0.02));
-      border: 1px solid var(--border);
-      border-radius: 24px;
+      background: 
+        linear-gradient(135deg, rgba(212, 175, 55, 0.03), transparent),
+        linear-gradient(180deg, var(--card) 0%, var(--panel) 100%);
+      border: 2px solid var(--border);
+      border-radius: 20px;
       padding: 40px;
       position: relative;
+      box-shadow: 
+        inset 0 1px 0 rgba(212, 175, 55, 0.1),
+        0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .upload-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, 
+        transparent 0%, 
+        var(--accent-glow) 50%, 
+        transparent 100%);
+      opacity: 0.3;
     }
 
     .upload-section h2 {
@@ -358,10 +449,12 @@
       font-weight: 800;
       text-align: center;
       margin-bottom: 32px;
-      background: linear-gradient(135deg, var(--accent), var(--good));
+      background: linear-gradient(135deg, var(--accent), var(--gold));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
     .form-group {
@@ -442,18 +535,21 @@
     .submit-btn {
       width: 100%;
       padding: 16px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-glow));
-      border: none;
+      background: linear-gradient(135deg, var(--accent-dark), var(--accent), var(--accent-glow));
+      border: 1px solid var(--accent-glow);
       border-radius: 12px;
-      color: white;
-      font-size: 18px;
+      color: var(--bg);
+      font-size: 16px;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.3s ease;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 2px;
       position: relative;
       overflow: hidden;
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 4px 20px rgba(212, 175, 55, 0.3);
     }
 
     .submit-btn::before {
@@ -463,17 +559,25 @@
       left: -100%;
       width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
       transition: left 0.5s ease;
     }
 
     .submit-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        0 8px 30px rgba(212, 175, 55, 0.5);
+      background: linear-gradient(135deg, var(--accent), var(--accent-glow), var(--gold));
     }
 
     .submit-btn:hover::before {
       left: 100%;
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
     }
 
     /* Cards Grid */
@@ -485,19 +589,43 @@
     }
 
     .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
+      background: linear-gradient(180deg, var(--card) 0%, var(--panel) 100%);
+      border: 2px solid var(--border);
+      border-radius: 16px;
       overflow: hidden;
       transition: all 0.3s ease;
       cursor: pointer;
       position: relative;
+      box-shadow: 
+        inset 0 1px 0 rgba(212, 175, 55, 0.1),
+        0 4px 20px rgba(0, 0, 0, 0.3);
     }
 
     .card:hover {
       transform: translateY(-8px) scale(1.02);
-      box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3);
+      box-shadow: 
+        inset 0 1px 0 rgba(212, 175, 55, 0.2),
+        0 20px 40px rgba(212, 175, 55, 0.2);
       border-color: var(--accent);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, 
+        transparent 0%, 
+        var(--accent-glow) 50%, 
+        transparent 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .card:hover::before {
+      opacity: 0.6;
     }
 
     .card-rank {
@@ -516,10 +644,28 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
-    .rank-1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
-    .rank-2 { background: linear-gradient(135deg, #94a3b8, #64748b); }
-    .rank-3 { background: linear-gradient(135deg, #f97316, #ea580c); }
-    .rank-other { background: linear-gradient(135deg, var(--accent), var(--accent-glow)); }
+    .rank-1 { 
+      background: linear-gradient(135deg, #ffd700, #ffed4e);
+      color: var(--bg);
+      font-weight: 900;
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        0 4px 12px rgba(255, 215, 0, 0.5);
+    }
+    .rank-2 { 
+      background: linear-gradient(135deg, #e0e0e0, #c0c0c0);
+      color: var(--bg);
+      font-weight: 900;
+    }
+    .rank-3 { 
+      background: linear-gradient(135deg, #cd7f32, #e4a853);
+      color: var(--bg);
+      font-weight: 900;
+    }
+    .rank-other { 
+      background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+      color: var(--bg);
+    }
 
     .card img {
       width: 100%;
@@ -554,12 +700,13 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      padding: 4px 12px;
-      background: rgba(139, 92, 246, 0.1);
-      border: 1px solid var(--border);
+      padding: 6px 12px;
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(244, 208, 63, 0.1));
+      border: 1px solid var(--border-light);
       border-radius: 20px;
       font-weight: 700;
-      color: var(--accent);
+      color: var(--accent-glow);
+      box-shadow: inset 0 1px 0 rgba(212, 175, 55, 0.2);
     }
 
     .card-links {
@@ -659,14 +806,16 @@
       bottom: 24px;
       width: 64px;
       height: 64px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-glow));
-      border: none;
+      background: linear-gradient(135deg, var(--accent-dark), var(--accent), var(--accent-glow));
+      border: 2px solid var(--accent-glow);
       border-radius: 50%;
-      color: white;
+      color: var(--bg);
       font-size: 28px;
-      font-weight: 700;
+      font-weight: 900;
       cursor: pointer;
-      box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+      box-shadow: 
+        inset 0 2px 0 rgba(255, 255, 255, 0.2),
+        0 8px 24px rgba(212, 175, 55, 0.4);
       transition: all 0.3s ease;
       display: flex;
       align-items: center;
@@ -676,7 +825,10 @@
 
     .fab:hover {
       transform: scale(1.1) rotate(90deg);
-      box-shadow: 0 12px 32px rgba(139, 92, 246, 0.6);
+      box-shadow: 
+        inset 0 2px 0 rgba(255, 255, 255, 0.3),
+        0 12px 32px rgba(212, 175, 55, 0.6);
+      background: linear-gradient(135deg, var(--accent), var(--accent-glow), var(--gold));
     }
 
     /* Footer */
@@ -778,7 +930,10 @@
   <header>
     <div class="wrap">
       <div class="header-content">
-        <div class="brand" onclick="location.hash='#/submit'">Facecard</div>
+        <div class="brand" onclick="location.hash='#/submit'">
+          <div class="brand-logo"></div>
+          <div class="brand-text">Facecard</div>
+        </div>
         <nav class="nav">
           <a href="#/submit" id="nav-submit">Submit</a>
           <a href="#/browse" id="nav-browse">Browse</a>
@@ -794,7 +949,7 @@
   <main class="wrap" id="app"></main>
 
   <footer>
-    <div>✨ Built for the TikTok "Facecard" trend</div>
+    <div style="color: var(--accent); font-weight: 600;">✨ Built for the TikTok "Facecard" trend ✨</div>
     <div style="margin-top: 8px; opacity: 0.7;">One vote per person • Powered by Supabase • Hosted on GitHub Pages</div>
   </footer>
 
@@ -982,8 +1137,9 @@
 
       const marquee = document.getElementById('topMarquee');
       if (top10?.length) {
-        // Duplicate for seamless scrolling
-        const items = [...top10, ...top10].map(r => `
+        // Only duplicate if we have less than 10 items for smooth scrolling
+        const itemsToShow = top10.length < 10 ? [...top10, ...top10] : top10;
+        const items = itemsToShow.map(r => `
           <div class="marquee-item" onclick="location.hash='#/browse'">
             <img src="${r.image_url}" alt="${r.display_name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzM0NCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjOTk5IiBmb250LXNpemU9IjE4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+'">
             <div class="marquee-info">
@@ -1203,18 +1359,24 @@
 
       if (!name) {
         toast('Please enter your display name', false);
+        btn.disabled = false;
+        btn.textContent = 'Upload Facecard';
         return;
       }
 
       let image_url = urlInput || null;
       if (!image_url && !file) {
         toast('Please provide an image URL or upload a file', false);
+        btn.disabled = false;
+        btn.textContent = 'Upload Facecard';
         return;
       }
 
       if (file) {
         if (file.size > 5 * 1024 * 1024) {
           toast('File too large (max 5MB)', false);
+          btn.disabled = false;
+          btn.textContent = 'Upload Facecard';
           return;
         }
 
@@ -1222,7 +1384,9 @@
         const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
         const path = `submissions/${id}.${ext}`;
         
-        const { error: upErr } = await supabase.storage
+        console.log('Attempting to upload to path:', path);
+        
+        const { data: uploadData, error: upErr } = await supabase.storage
           .from('facecard')
           .upload(path, file, {
             cacheControl: '3600',
@@ -1231,12 +1395,43 @@
           });
 
         if (upErr) {
-          toast('Upload failed: ' + upErr.message, false);
+          console.error('Upload error:', upErr);
+          
+          // Check if it's a bucket/permissions issue
+          if (upErr.message.includes('not found') || upErr.statusCode === 404) {
+            toast('Storage bucket not configured. Please use an image URL instead.', false);
+          } else if (upErr.message.includes('policy') || upErr.statusCode === 403) {
+            toast('Storage permissions error. Please use an image URL instead.', false);
+          } else {
+            toast(`Upload failed: ${upErr.message}. Try using an image URL instead.`, false);
+          }
+          
+          btn.disabled = false;
+          btn.textContent = 'Upload Facecard';
           return;
         }
 
+        console.log('Upload successful:', uploadData);
         const { data: pub } = supabase.storage.from('facecard').getPublicUrl(path);
         image_url = pub.publicUrl;
+        console.log('Public URL:', image_url);
+      }
+
+      // If using URL, validate it's an image
+      if (urlInput && !file) {
+        // Basic URL validation
+        try {
+          new URL(image_url);
+          // Check if it looks like an image URL
+          if (!image_url.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i) && !image_url.includes('images')) {
+            console.warn('URL may not be an image:', image_url);
+          }
+        } catch (e) {
+          toast('Please enter a valid image URL', false);
+          btn.disabled = false;
+          btn.textContent = 'Upload Facecard';
+          return;
+        }
       }
 
       const submission = {
@@ -1246,16 +1441,22 @@
         verify_url: verifyUrl
       };
 
+      console.log('Submitting to database:', submission);
+
       const { data, error } = await supabase
         .from('submissions')
         .insert(submission)
         .select('id');
 
       if (error) {
-        toast('Submit failed: ' + error.message, false);
+        console.error('Database error:', error);
+        toast(`Submit failed: ${error.message}`, false);
+        btn.disabled = false;
+        btn.textContent = 'Upload Facecard';
         return;
       }
 
+      console.log('Submission successful:', data);
       toast('Facecard submitted successfully! 🎉');
       
       // Clear form
@@ -1264,14 +1465,20 @@
       document.getElementById('xHandle').value = '';
       document.getElementById('verifyUrl').value = '';
       document.getElementById('imageFile').value = '';
-      document.querySelector('.file-upload-text').textContent = 'Click to upload your best shot';
-      document.querySelector('.file-upload-text').style.color = 'var(--accent)';
+      const uploadText = document.querySelector('.file-upload-text');
+      if (uploadText) {
+        uploadText.textContent = 'Click to upload your best shot';
+        uploadText.style.color = 'var(--accent)';
+      }
 
       // Redirect to browse
       setTimeout(() => {
         location.hash = '#/browse';
       }, 1500);
 
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast('An unexpected error occurred. Please try again.', false);
     } finally {
       btn.disabled = false;
       btn.textContent = 'Upload Facecard';
