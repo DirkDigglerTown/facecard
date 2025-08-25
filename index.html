@@ -1,87 +1,306 @@
 <!doctype html>
-`;
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Facecard</title>
+  <meta name="description" content="Submit your facecard. Vote your favorites. Hall of Fame top 10." />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0b0b0f; --card:#15151c; --text:#e9e9ef; --muted:#a3a3ad; --accent:#8b5cf6; --good:#22c55e; --bad:#ef4444; }
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(1200px 600px at 20% -10%,rgba(139,92,246,.15),transparent),
+                 radial-gradient(1200px 600px at 120% 10%,rgba(34,197,94,.08),transparent),var(--bg);color:var(--text);
+         font:16px/1.55 Inter, ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    header{position:sticky;top:0;z-index:10;background:rgba(11,11,15,.8);backdrop-filter:saturate(150%) blur(6px);border-bottom:1px solid #20202a}
+    .wrap{max-width:1000px;margin:0 auto;padding:20px}
+    .row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+    .brand{font-weight:800;letter-spacing:.5px}
+    .nav a{color:var(--muted);text-decoration:none;margin-right:14px}
+    .nav a.active{color:var(--text)}
+    .card{background:var(--card);border:1px solid #23232f;border-radius:16px;padding:16px}
+    form.card input, .search input{width:100%;padding:12px;border-radius:12px;border:1px solid #2a2a36;background:#101018;color:var(--text)}
+    form.card input::placeholder, .search input::placeholder{color:#737383}
+    form.card button{background:var(--accent);border:none;font-weight:700;cursor:pointer;border-radius:12px;padding:12px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+    .sub-card{background:#101018;border:1px solid #23232f;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:transform .12s ease, box-shadow .12s ease}
+    .sub-card:hover{transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.25)}
+    .sub-card img{width:100%;aspect-ratio:1/1;object-fit:cover}
+    .sub-card .meta{padding:12px}
+    .pill{display:inline-flex;gap:6px;align-items:center;background:#14141c;border:1px solid #242433;color:var(--muted);padding:6px 10px;border-radius:999px;font-size:12px;text-decoration:none}
+    .vote{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:12px;border-top:1px solid #1e1e28}
+    .btn{display:inline-flex;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;border:1px solid #2a2a36;background:#0f0f16;color:var(--text);cursor:pointer;transition:background .12s ease, border-color .12s ease, transform .06s ease}
+    .btn:active{transform:translateY(1px)}
+    .btn.up{border-color:#1f3b2a}
+    .btn.down{border-color:#3b1f1f}
+    .btn.up:hover{background:rgba(34,197,94,.12)}
+    .btn.down:hover{background:rgba(239,68,68,.12)}
+    .score{font-weight:800}
+    .hint{color:var(--muted);font-size:12px}
+    footer{color:var(--muted);text-align:center;padding:40px 0}
+    .preview{width:100%;max-width:280px;border-radius:12px;margin-top:8px;border:1px solid #23232f}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" defer></script>
+</head>
+<body>
+  <header>
+    <div class="wrap row">
+      <div class="brand">💳 Facecard</div>
+      <nav class="nav">
+        <a href="#/submit" id="nav-submit">Submit</a>
+        <a href="#/browse" id="nav-browse">Browse</a>
+        <a href="#/hall" id="nav-hall">Hall of Fame</a>
+      </nav>
+      <div style="margin-left:auto" class="search">
+        <input id="searchInput" type="search" placeholder="Search username or @handle…" />
+      </div>
+    </div>
+  </header>
 
+  <main class="wrap" id="app"></main>
 
-// Top 10 by score via view
-const { data, error } = await supabase.from('v_submissions_with_score').select('*').order('score', { ascending:false }).limit(10);
-if (error) return (document.getElementById('grid').innerHTML = `<p class="hint">Error: ${error.message}</p>`);
-renderCards(data, true);
-}
+  <footer>
+    Built for the TikTok "Facecard" trend • One vote/person per submission via edge IP hash • Host: GitHub Pages
+  </footer>
 
+  <script>
+  // ====== ENV (yours) ======
+  const SUPABASE_URL = "https://sfxmpqgxvuvnwwuesmin.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmeG1wcWd4dnV2bnd3dWVzbWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMzIwMDEsImV4cCI6MjA3MTcwODAwMX0.LIzivyw4jya9lY6vw9hC8A8Ofmjcj1LgIF3lC_RlxZA";
+  const EDGE_FUNCTION_URL = "https://sfxmpqgxvuvnwwuesmin.supabase.co/functions/v1/cast-vote";
+  // ==========================
 
-// Live search
-const searchInput = document.getElementById('searchInput');
-let searchTimer;
-searchInput.addEventListener('input', ()=>{
-clearTimeout(searchTimer);
-searchTimer = setTimeout(loadAndRenderCards, 250);
-});
+  const { createClient } = window.supabase;
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false } });
 
+  // Toast mini-helper
+  function toast(msg, ok=true){
+    const t = document.createElement('div');
+    t.textContent = msg;
+    t.style.position='fixed'; t.style.left='50%'; t.style.top='20px'; t.style.transform='translateX(-50%)';
+    t.style.background = ok ? 'rgba(34,197,94,.12)' : 'rgba(239,68,68,.12)';
+    t.style.border = `1px solid ${ok?'#1f3b2a':'#3b1f1f'}`;
+    t.style.color = 'var(--text)'; t.style.padding='10px 14px'; t.style.borderRadius='10px'; t.style.zIndex='9999';
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(), 1800);
+  }
 
-async function loadAndRenderCards(){
-const q = (searchInput.value || '').trim().toLowerCase();
-let query = supabase.from('v_submissions_with_score').select('*');
-if (q) {
-query = query.ilike('display_name', `%${q}%`).or(`x_handle.ilike.%${q}%`);
-}
-query = query.order('created_at', { ascending:false }).limit(60);
-const { data, error } = await query;
-if (error) return (document.getElementById('grid').innerHTML = `<p class="hint">Error: ${error.message}</p>`);
-renderCards(data);
-}
+  // Utility: format @handle → handle
+  const normalizeHandle = (h) => {
+    if (!h) return null;
+    h = h.trim();
+    if (!h) return null;
+    if (h.startsWith('http')) {
+      try { const u = new URL(h); return u.pathname.replaceAll('/', '').toLowerCase(); } catch(e) { return h.toLowerCase(); }
+    }
+    if (h.startsWith('@')) return h.slice(1).toLowerCase();
+    return h.toLowerCase();
+  };
 
+  // Router
+  function route() {
+    const hash = location.hash || '#/submit';
+    document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+    if (hash.startsWith('#/submit')) document.getElementById('nav-submit').classList.add('active');
+    if (hash.startsWith('#/browse')) document.getElementById('nav-browse').classList.add('active');
+    if (hash.startsWith('#/hall')) document.getElementById('nav-hall').classList.add('active');
+    if (hash.startsWith('#/submit')) renderSubmit();
+    else if (hash.startsWith('#/hall')) renderHall();
+    else renderBrowse();
+  }
+  window.addEventListener('hashchange', route);
+  window.addEventListener('load', route);
 
-function renderCards(rows, showRank=false){
-const grid = document.getElementById('grid');
-if (!rows || rows.length === 0) { grid.innerHTML = '<p class="hint">No results yet.</p>'; return; }
+  // Views
+  async function renderSubmit(){
+    const el = document.getElementById('app');
+    el.innerHTML = `
+      <div class="row" style="align-items:flex-start">
+        <form class="card" id="submitForm" style="flex:1;min-width:320px">
+          <h2 style="margin:0 0 8px">Submit your Facecard</h2>
+          <p class="hint">Upload a square image if you can. Max ~5MB. Link your X handle if you like.</p>
+          <div style="display:grid;gap:12px;margin-top:10px">
+            <input type="text" id="displayName" placeholder="Display name (e.g., Jane Doe)" required />
+            <input type="url" id="imageUrl" placeholder="Image URL (optional if uploading below)" />
+            <input type="file" id="imageFile" accept="image/*" />
+            <input type="text" id="xHandle" placeholder="X handle or profile URL (optional)" />
+            <input type="url" id="verifyUrl" placeholder="Verification tweet URL (optional)" />
+            <button type="submit">Submit</button>
+          </div>
+        </form>
+        <div class="card" style="flex:1;min-width:280px">
+          <h3 style="margin-top:0">How it works</h3>
+          <ol style="margin:0 0 10px 18px">
+            <li>Submit: name + image (upload or link) + optional X handle/tweet.</li>
+            <li>Share your page so friends can vote.</li>
+            <li>One vote per person per submission (enforced via IP hash at edge).</li>
+          </ol>
+          <p class="hint">We never store raw IPs; only a salted one‑way hash at the edge to prevent repeat voting.</p>
+        </div>
+      </div>
+    `;
 
+    // Image preview on file select
+    const imgInput = document.getElementById('imageFile');
+    imgInput.addEventListener('change', (e)=>{
+      const f = e.target.files?.[0];
+      if (!f) return;
+      const url = URL.createObjectURL(f);
+      const preview = document.createElement('img');
+      preview.src = url; preview.alt = 'preview';
+      preview.className = 'preview';
+      const exists = e.target.closest('form').querySelector('.preview');
+      if (exists) exists.replaceWith(preview); else e.target.closest('form').appendChild(preview);
+    });
 
-const url = new URL(location.href);
-const highlight = url.hash.includes('highlight=') ? url.hash.split('highlight=')[1] : null;
+    document.getElementById('submitForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const name = document.getElementById('displayName').value.trim();
+      const urlInput = document.getElementById('imageUrl').value.trim();
+      const file = document.getElementById('imageFile').files[0];
+      const xHandleRaw = document.getElementById('xHandle').value;
+      const verifyUrl = document.getElementById('verifyUrl').value.trim() || null;
+      const x_handle = normalizeHandle(xHandleRaw);
 
+      if (!name){ toast('Display name required', false); return; }
 
-grid.innerHTML = rows.map((r, idx)=>{
-const at = r.x_handle ? '@' + r.x_handle : '';
-const rank = showRank ? `<div class="pill">#${idx+1} • <span class="score">${r.score ?? 0}</span></div>` : `<div class="pill">score <span class="score">${r.score ?? 0}</span></div>`;
-const hl = highlight && highlight.startsWith(r.id) ? 'outline:2px solid var(--accent);outline-offset:2px' : '';
-return `
-<div class="sub-card" style="${hl}">
-<img src="${r.image_url}" alt="${r.display_name}" />
-<div class="meta">
-<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
-<strong>${r.display_name}</strong>
-${rank}
-</div>
-<div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-${r.x_handle ? `<a class="pill" href="https://x.com/${r.x_handle}" target="_blank" rel="noopener">x.com/${r.x_handle}</a>` : ''}
-${r.verify_url ? `<a class="pill" href="${r.verify_url}" target="_blank" rel="noopener">verification</a>` : ''}
-</div>
-</div>
-<div class="vote">
-<button class="btn up" onclick="vote('${r.id}', 1)">▲ Upvote</button>
-<button class="btn down" onclick="vote('${r.id}', -1)">▼ Downvote</button>
-</div>
-</div>`;
-}).join('');
-}
+      let image_url = urlInput || null;
+      if (!image_url && !file){ toast('Provide an image URL or upload a file.', false); return; }
 
+      // Upload file to Supabase Storage if provided
+      if (file) {
+        if (file.size > 5 * 1024 * 1024){ toast('File too large (max 5MB).', false); return; }
+        const id = crypto.randomUUID();
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        const path = `submissions/${id}.${ext}`;
+        const { error: upErr } = await supabase.storage.from('facecard').upload(path, file, {
+          cacheControl: '3600', upsert: false, contentType: file.type || 'image/jpeg'
+        });
+        if (upErr){ toast('Upload failed: ' + upErr.message, false); return; }
+        const { data: pub } = supabase.storage.from('facecard').getPublicUrl(path);
+        image_url = pub.publicUrl;
+      }
 
-async function vote(submission_id, direction){
-try{
-const res = await fetch(EDGE_FUNCTION_URL, {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ submission_id, direction })
-});
-const out = await res.json();
-if (!res.ok) throw new Error(out.error || 'Vote failed');
-// Refresh visible lists
-if (location.hash.startsWith('#/hall')) await renderHall(); else await loadAndRenderCards();
-} catch(e){
-alert(e.message);
-}
-}
-window.vote = vote;
-</script>
+      const submission = { display_name: name, image_url, x_handle, verify_url: verifyUrl };
+      const { data, error } = await supabase.from('submissions').insert(submission).select('id');
+      if (error){ toast('Submit failed: ' + error.message, false); return; }
+
+      const sid = data[0].id;
+      location.hash = `#/browse?highlight=${sid}`;
+      await renderBrowse();
+      toast('Submitted!');
+    });
+  }
+
+  async function renderBrowse(){
+    const el = document.getElementById('app');
+    el.innerHTML = `
+      <div class="row" style="justify-content:space-between;align-items:end">
+        <div>
+          <h2 style="margin:0 0 8px">Browse & Vote</h2>
+          <p class="hint">Search by display name or @handle. Click ▲ / ▼ to vote. One vote per person per submission.</p>
+        </div>
+        <a class="pill" href="#/hall">🏆 Hall of Fame</a>
+      </div>
+      <div class="grid" id="grid"></div>
+    `;
+    await loadAndRenderCards();
+  }
+
+  async function renderHall(){
+    const el = document.getElementById('app');
+    el.innerHTML = `
+      <div class="row" style="justify-content:space-between;align-items:end">
+        <div>
+          <h2 style="margin:0 0 8px">Hall of Fame — Top 10</h2>
+          <p class="hint">All‑time leaders by score (upvotes − downvotes).</p>
+        </div>
+        <a class="pill" href="#/browse">← Back to Browse</a>
+      </div>
+      <div class="grid" id="grid"></div>
+    `;
+
+    const { data, error } = await supabase
+      .from('v_submissions_with_score')
+      .select('*')
+      .order('score', { ascending:false })
+      .limit(10);
+    if (error){ document.getElementById('grid').innerHTML = `<p class="hint">Error: ${error.message}</p>`; return; }
+    renderCards(data, true);
+  }
+
+  // Live search
+  const searchInput = document.getElementById('searchInput');
+  let searchTimer;
+  searchInput?.addEventListener('input', ()=>{
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(loadAndRenderCards, 250);
+  });
+
+  async function loadAndRenderCards(){
+    const q = (searchInput?.value || '').trim().toLowerCase();
+    let query = supabase.from('v_submissions_with_score').select('*');
+    if (q) {
+      // Search name OR handle
+      query = query.or(`display_name.ilike.%${q}%,x_handle.ilike.%${q}%`);
+    }
+    query = query.order('created_at', { ascending:false }).limit(60);
+    const { data, error } = await query;
+    if (error){ document.getElementById('grid').innerHTML = `<p class="hint">Error: ${error.message}</p>`; return; }
+    renderCards(data);
+  }
+
+  function renderCards(rows, showRank=false){
+    const grid = document.getElementById('grid');
+    if (!rows || rows.length === 0) { grid.innerHTML = '<p class="hint">No results yet.</p>'; return; }
+
+    const url = new URL(location.href);
+    const highlight = url.hash.includes('highlight=') ? url.hash.split('highlight=')[1] : null;
+
+    grid.innerHTML = rows.map((r, idx)=>{
+      const rank = showRank ? `<div class=\"pill\">#${idx+1} • <span class=\"score\">${r.score ?? 0}</span></div>`
+                            : `<div class=\"pill\">score <span class=\"score\">${r.score ?? 0}</span></div>`;
+      const hl = highlight && highlight.startsWith(r.id) ? 'outline:2px solid var(--accent);outline-offset:2px' : '';
+      return `
+        <div class="sub-card" style="${hl}">
+          <img src="${r.image_url}" alt="${r.display_name}" />
+          <div class="meta">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+              <strong>${r.display_name}</strong>
+              ${rank}
+            </div>
+            <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              ${r.x_handle ? `<a class="pill" href="https://x.com/${r.x_handle}" target="_blank" rel="noopener">x.com/${r.x_handle}</a>` : ''}
+              ${r.verify_url ? `<a class="pill" href="${r.verify_url}" target="_blank" rel="noopener">verification</a>` : ''}
+            </div>
+          </div>
+          <div class="vote">
+            <button class="btn up" onclick="vote('${r.id}', 1)">▲ Upvote</button>
+            <button class="btn down" onclick="vote('${r.id}', -1)">▼ Downvote</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  async function vote(submission_id, direction){
+    try{
+      const res = await fetch(EDGE_FUNCTION_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ submission_id, direction })
+      });
+      const out = await res.json();
+      if (!res.ok) throw new Error(out.error || 'Vote failed');
+      if (location.hash.startsWith('#/hall')) await renderHall(); else await loadAndRenderCards();
+      toast(direction === 1 ? 'Upvoted' : 'Downvoted');
+    } catch(e){
+      toast(String(e.message || e), false);
+    }
+  }
+  window.vote = vote;
+  </script>
 </body>
 </html>
