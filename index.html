@@ -755,7 +755,8 @@
       }
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/index.umd.min.js"></script>
+  <!-- Fixed Supabase UMD bundle -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 </head>
 <body>
   <!-- Animated particles -->
@@ -800,12 +801,32 @@
   <button class="fab" onclick="location.hash='#/submit'">+</button>
 
   <script>
-  // Supabase config
+  // Supabase config - Your exact credentials
   const SUPABASE_URL = "https://sfxmpqgxvuvnwwuesmin.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmeG1wcWd4dnV2bnd3dWVzbWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMzIwMDEsImV4cCI6MjA3MTcwODAwMX0.LIzivyw4jya9lY6vw9hC8A8Ofmjcj1LgIF3lC_RlxZA";
   const EDGE_FUNCTION_URL = "https://sfxmpqgxvuvnwwuesmin.supabase.co/functions/v1/cast-vote";
 
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false } });
+  // Wait for Supabase to load
+  let supabase;
+  
+  function initSupabase() {
+    if (typeof window.supabase !== 'undefined') {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false } });
+      return true;
+    }
+    return false;
+  }
+
+  // Try to initialize Supabase
+  if (!initSupabase()) {
+    // If Supabase isn't loaded yet, wait for it
+    window.addEventListener('load', () => {
+      if (!initSupabase()) {
+        console.error('Supabase failed to load. Please refresh the page.');
+        toast('Error loading database connection. Please refresh.', false);
+      }
+    });
+  }
 
   // Helpers
   function toast(msg, ok = true) {
@@ -865,6 +886,11 @@
 
   // Submit page
   async function renderSubmit() {
+    if (!supabase) {
+      toast('Database not ready. Please refresh.', false);
+      return;
+    }
+    
     const el = document.getElementById('app');
     el.innerHTML = `
       <div class="hero">
@@ -913,44 +939,62 @@
     `;
 
     // Load top 10 for marquee
-    const { data: top10 } = await supabase
-      .from('v_submissions_with_score')
-      .select('*')
-      .order('score', { ascending: false })
-      .limit(10);
+    try {
+      const { data: top10 } = await supabase
+        .from('v_submissions_with_score')
+        .select('*')
+        .order('score', { ascending: false })
+        .limit(10);
 
-    const marquee = document.getElementById('topMarquee');
-    if (top10?.length) {
-      // Duplicate for seamless scrolling
-      const items = [...top10, ...top10].map(r => `
-        <div class="marquee-item" onclick="location.hash='#/browse'">
-          <img src="${r.image_url}" alt="${r.display_name}">
-          <div class="marquee-info">
-            <div class="marquee-name">${r.display_name}</div>
-            <div class="marquee-score">⭐ ${r.score ?? 0}</div>
+      const marquee = document.getElementById('topMarquee');
+      if (top10?.length) {
+        // Duplicate for seamless scrolling
+        const items = [...top10, ...top10].map(r => `
+          <div class="marquee-item" onclick="location.hash='#/browse'">
+            <img src="${r.image_url}" alt="${r.display_name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzM0NCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjOTk5IiBmb250LXNpemU9IjE4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+'">
+            <div class="marquee-info">
+              <div class="marquee-name">${r.display_name}</div>
+              <div class="marquee-score">⭐ ${r.score ?? 0}</div>
+            </div>
           </div>
-        </div>
-      `).join('');
-      marquee.innerHTML = items;
-    } else {
-      marquee.innerHTML = `<div style="padding: 20px; color: var(--muted);">Be the first to submit! 🚀</div>`;
+        `).join('');
+        marquee.innerHTML = items;
+      } else {
+        marquee.innerHTML = `<div style="padding: 20px; color: var(--muted);">Be the first to submit! 🚀</div>`;
+      }
+    } catch (error) {
+      console.error('Error loading top 10:', error);
+      document.getElementById('topMarquee').innerHTML = `<div style="padding: 20px; color: var(--muted);">Loading top facecards...</div>`;
     }
 
     // File upload preview
-    document.getElementById('imageFile').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        const text = document.querySelector('.file-upload-text');
-        text.textContent = file.name;
-        text.style.color = 'var(--good)';
-      }
-    });
+    const fileInput = document.getElementById('imageFile');
+    if (fileInput) {
+      fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const text = document.querySelector('.file-upload-text');
+          if (text) {
+            text.textContent = file.name;
+            text.style.color = 'var(--good)';
+          }
+        }
+      });
+    }
 
-    document.getElementById('submitBtn').addEventListener('click', submitCard);
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) {
+      submitBtn.addEventListener('click', submitCard);
+    }
   }
 
   // Browse page
   async function renderBrowse() {
+    if (!supabase) {
+      toast('Database not ready. Please refresh.', false);
+      return;
+    }
+    
     const el = document.getElementById('app');
     el.innerHTML = `
       <div style="margin-bottom: 32px;">
@@ -964,6 +1008,11 @@
 
   // Hall of Fame page
   async function renderHall() {
+    if (!supabase) {
+      toast('Database not ready. Please refresh.', false);
+      return;
+    }
+    
     const el = document.getElementById('app');
     el.innerHTML = `
       <div style="margin-bottom: 32px;">
@@ -973,61 +1022,95 @@
       <div class="grid loading" id="grid"></div>
     `;
 
-    const { data, error } = await supabase
-      .from('v_submissions_with_score')
-      .select('*')
-      .order('score', { ascending: false })
-      .limit(10);
+    try {
+      const { data, error } = await supabase
+        .from('v_submissions_with_score')
+        .select('*')
+        .order('score', { ascending: false })
+        .limit(10);
 
-    if (error) {
+      if (error) {
+        document.getElementById('grid').innerHTML = `
+          <div class="empty-state">
+            <h3>Error loading Hall of Fame</h3>
+            <p>${error.message}</p>
+          </div>`;
+        return;
+      }
+
+      renderCards(data, true);
+    } catch (error) {
+      console.error('Error in renderHall:', error);
       document.getElementById('grid').innerHTML = `
         <div class="empty-state">
           <h3>Error loading Hall of Fame</h3>
-          <p>${error.message}</p>
+          <p>Please try again later.</p>
         </div>`;
-      return;
     }
-
-    renderCards(data, true);
   }
 
   async function loadAndRenderCards() {
-    const q = (searchInput?.value || '').trim().toLowerCase();
-    let query = supabase.from('v_submissions_with_score').select('*');
-    
-    if (q) {
-      query = query.or(`display_name.ilike.%${q}%,x_handle.ilike.%${q}%`);
-    }
-    
-    query = query.order('created_at', { ascending: false }).limit(60);
-    const { data, error } = await query;
-
-    const grid = document.getElementById('grid');
-    grid.classList.remove('loading');
-
-    if (error) {
-      grid.innerHTML = `
-        <div class="empty-state">
-          <h3>Error loading submissions</h3>
-          <p>${error.message}</p>
-        </div>`;
+    if (!supabase) {
+      toast('Database not ready. Please refresh.', false);
       return;
     }
+    
+    try {
+      const q = (searchInput?.value || '').trim().toLowerCase();
+      let query = supabase.from('v_submissions_with_score').select('*');
+      
+      if (q) {
+        query = query.or(`display_name.ilike.%${q}%,x_handle.ilike.%${q}%`);
+      }
+      
+      query = query.order('created_at', { ascending: false }).limit(60);
+      const { data, error } = await query;
 
-    if (!data || !data.length) {
-      grid.innerHTML = `
-        <div class="empty-state">
-          <h3>No facecards found</h3>
-          <p>${q ? 'Try a different search term or' : ''} <a href="#/submit">be the first to upload</a>!</p>
-        </div>`;
-      return;
+      const grid = document.getElementById('grid');
+      if (grid) {
+        grid.classList.remove('loading');
+      }
+
+      if (error) {
+        if (grid) {
+          grid.innerHTML = `
+            <div class="empty-state">
+              <h3>Error loading submissions</h3>
+              <p>${error.message}</p>
+            </div>`;
+        }
+        return;
+      }
+
+      if (!data || !data.length) {
+        if (grid) {
+          grid.innerHTML = `
+            <div class="empty-state">
+              <h3>No facecards found</h3>
+              <p>${q ? 'Try a different search term or' : ''} <a href="#/submit">be the first to upload</a>!</p>
+            </div>`;
+        }
+        return;
+      }
+
+      renderCards(data);
+    } catch (error) {
+      console.error('Error in loadAndRenderCards:', error);
+      const grid = document.getElementById('grid');
+      if (grid) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <h3>Error loading submissions</h3>
+            <p>Please try again later.</p>
+          </div>`;
+      }
     }
-
-    renderCards(data);
   }
 
   function renderCards(rows, showRank = false) {
     const grid = document.getElementById('grid');
+    if (!grid) return;
+    
     grid.classList.remove('loading');
     
     grid.innerHTML = rows.map((r, idx) => {
@@ -1040,7 +1123,7 @@
       return `
         <div class="card">
           ${rankBadge}
-          <img src="${r.image_url}" alt="${r.display_name}" />
+          <img src="${r.image_url}" alt="${r.display_name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzM0NCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjOTk5IiBmb250LXNpemU9IjE4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+'" />
           <div class="card-info">
             <div class="card-header">
               <div class="card-name">${r.display_name}</div>
